@@ -25,8 +25,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     //categories table
     String TABLE_CATEGORIES  = "categories";
-    String COL_CATEGORY_ID   = "category_id";
-    String COL_CATEGORY_NAME = "category_name";
+    static String COL_CATEGORY_ID   = "category_id";
+    static String COL_CATEGORY_NAME = "category_name";
 
     //resources table
     String TABLE_RESOURCES   = "resources";
