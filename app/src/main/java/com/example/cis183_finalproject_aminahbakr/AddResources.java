@@ -102,42 +102,42 @@ public class AddResources extends AppCompatActivity {
     //get the user
     //need a session manager to see which exact user is logged in
     //String username = SessionManager.getLoggedInUser(this);
-    long userId = 1;
+//    long userId = 1;
+//
+//
+//        if (username != null) {
+//        // simple lookup to get userId from username
+//        userId = getUserIdByUsername(username);
+//    }
+//
+//    String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+//            .format(new Date());
+//
+//    long result = dbHelper.insertResource(userId, selectedCategoryId,
+//            orgName, address, city, contact, desc, date);
 
-
-        if (username != null) {
-        // simple lookup to get userId from username
-        userId = getUserIdByUsername(username);
-    }
-
-    String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            .format(new Date());
-
-    long result = dbHelper.insertResource(userId, selectedCategoryId,
-            orgName, address, city, contact, desc, date);
-
-        if (result == -1) {
-        Toast.makeText(this, "Error saving resource", Toast.LENGTH_SHORT).show();
-    } else {
-        Toast.makeText(this, "Resource added", Toast.LENGTH_SHORT).show();
-        finish();
-    }
-}
-
-private long getUserIdByUsername(String username) {
-    SQLiteDatabase db = dbHelper.getReadableDatabase();
-    Cursor c = db.query(DatabaseHelper.TABLE_USERS,
-            new String[]{ DatabaseHelper.COL_USER_ID },
-            DatabaseHelper.COL_USER_USERNAME + "=?",
-            new String[]{ username }, null, null, null);
-    if (c != null && c.moveToFirst()) {
-        long id = c.getLong(0);
-        c.close();
-        return id;
-    }
-    if (c != null) c.close();
-    return 1; // fallback
-}
+//        if (result == -1) {
+//        Toast.makeText(this, "Error saving resource", Toast.LENGTH_SHORT).show();
+//    } else {
+//        Toast.makeText(this, "Resource added", Toast.LENGTH_SHORT).show();
+//        finish();
+//    }
+//}
+//
+//private long getUserIdByUsername(String username) {
+//    SQLiteDatabase db = dbHelper.getReadableDatabase();
+//    Cursor c = db.query(DatabaseHelper.TABLE_USERS,
+//            new String[]{ DatabaseHelper.COL_USER_ID },
+//            DatabaseHelper.COL_USER_USERNAME + "=?",
+//            new String[]{ username }, null, null, null);
+//    if (c != null && c.moveToFirst()) {
+//        long id = c.getLong(0);
+//        c.close();
+//        return id;
+//    }
+//    if (c != null) c.close();
+//    return 1; // fallback
+//}
 
 
 }
