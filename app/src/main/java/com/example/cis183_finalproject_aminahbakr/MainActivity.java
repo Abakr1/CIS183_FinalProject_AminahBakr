@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         btn_j_login    = findViewById(R.id.btn_v_logIn);
         btn_j_register = findViewById(R.id.btn_v_register);
 
-        dbHelper = new DatabaseHelper();
+        dbHelper = new DatabaseHelper(this);
 
         //for the login button
         btn_j_login.setOnClickListener(v -> attemptLogin());
@@ -55,17 +55,17 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show();
         }
 
-        //boolean ok = dbHelper.checkUserLogin(username, password);
+        boolean ok = dbHelper.checkUserLogin(username, password);
 
-        //if(ok) {
-          //  Toast.makeText(this, "Logged In", Toast.LENGTH_SHORT).show();
+        if(ok) {
+          Toast.makeText(this, "Logged In", Toast.LENGTH_SHORT).show();
 
-           // Intent i = new Intent(MainActivity.this, Search.class);
-          //  startActivity(i);
-           // finish();
-       // }
-       // else{
-       //     Toast.makeText(this,"Invalid username or password", Toast.LENGTH_SHORT).show();
-        //}
+           Intent i = new Intent(MainActivity.this, Search.class);
+           startActivity(i);
+           finish();
+        }
+       else{
+          Toast.makeText(this,"Invalid username or password", Toast.LENGTH_SHORT).show();
+       }
     }
 }
