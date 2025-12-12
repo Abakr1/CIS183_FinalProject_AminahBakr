@@ -117,7 +117,7 @@
                 app:layout_constraintVertical_bias="0.194" />
 
             <EditText
-                android:id="@+id/et_v_manage_username"
+                android:id="@+id/tv_v_manage_username"
                 android:layout_width="239dp"
                 android:layout_height="52dp"
                 android:layout_marginTop="8dp"
@@ -146,7 +146,7 @@
                 app:layout_constraintVertical_bias="0.382" />
 
             <EditText
-                android:id="@+id/et_v_manage_email"
+                android:id="@+id/tv_v_manage_email"
                 android:layout_width="239dp"
                 android:layout_height="52dp"
                 android:layout_marginTop="8dp"
@@ -175,7 +175,7 @@
                 app:layout_constraintVertical_bias="0.565" />
 
             <EditText
-                android:id="@+id/et_v_manage_city"
+                android:id="@+id/tv_v_manage_city"
                 android:layout_width="239dp"
                 android:layout_height="52dp"
                 android:layout_marginTop="8dp"

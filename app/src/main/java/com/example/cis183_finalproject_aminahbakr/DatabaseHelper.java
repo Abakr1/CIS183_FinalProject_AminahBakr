@@ -14,14 +14,14 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     static final int DATABASE_VERSION = 1;
 
     // users table
-    String TABLE_USERS  = "users";
+    static String TABLE_USERS  = "users";
     String COL_USER_ID  = "users_id";
-    String COL_USER_USERNAME = "username";
+    static String COL_USER_USERNAME = "username";
     String COL_USER_PASSWORD = "password";
     String COL_USER_NAME     = "name";
-    String COL_USER_EMAIL    = "email";
-    String COL_USER_CITY     = "city";
-    String COL_USER_ORG_ROLE = "org_rule";
+    static String COL_USER_EMAIL    = "email";
+    static String COL_USER_CITY     = "city";
+    static String COL_USER_ORG_ROLE = "org_rule";
 
     //categories table
     String TABLE_CATEGORIES  = "categories";
