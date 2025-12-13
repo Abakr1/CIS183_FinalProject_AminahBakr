@@ -36,6 +36,7 @@ public class Register extends AppCompatActivity {
         et_j_register_username = findViewById(R.id.et_v_register_username);
         et_j_register_password = findViewById(R.id.et_v_register_password);
         //have to add a textView for email on the register page
+        et_j_register_email    = findViewById(R.id.et_v_register_email);
         sp_j_register_city     = findViewById(R.id.sp_v_register_city);
         rg_j_register_rgOrg    = findViewById(R.id.rg_v_register_radioGroup);
         rb_j_register_yes      = findViewById(R.id.rb_v_register_yes);
@@ -50,6 +51,7 @@ public class Register extends AppCompatActivity {
         String username = et_j_register_username.getText().toString().trim();
         String password = et_j_register_password.getText().toString().trim();
         //for email as well
+        String email    = et_j_register_email.getText().toString().trim();
         String city     = sp_j_register_city.getSelectedItem() != null ? sp_j_register_city.getSelectedItem().toString() : "";
 
         int checkedId = rg_j_register_rgOrg.getCheckedRadioButtonId();
@@ -63,20 +65,20 @@ public class Register extends AppCompatActivity {
 
         }
 
-        if(username.isEmpty() || password.isEmpty())
+        if(username.isEmpty() || password.isEmpty() || email.isEmpty())
         {
-            Toast.makeText(this, "Username and Password Required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Username,Password, and Email Required", Toast.LENGTH_SHORT).show();
             return;
         }
         //have to fix this
-        //long result = dbHelper.insertUser(username, password, city, orgRole);
+        long result = dbHelper.insertUser(username,password, " ",email, city, orgRole);
 
-       // if(result == -1) {
-       //     Toast.makeText(this, "Error creating user", Toast.LENGTH_SHORT).show();
-      //  }
-       // else{
-        //    Toast.makeText(this, "Registered Scuccefully, Please log in", Toast.LENGTH_SHORT).show();
-        //    finish();
-        //}
+        if(result == -1) {
+           Toast.makeText(this, "Error creating user", Toast.LENGTH_SHORT).show();
+        }
+        else{
+           Toast.makeText(this, "Registered Scuccefully, Please log in", Toast.LENGTH_SHORT).show();
+           finish();
+        }
     }
 }

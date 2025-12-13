@@ -34,6 +34,15 @@ public class MainActivity extends AppCompatActivity {
         btn_j_register = findViewById(R.id.btn_v_register);
 
         dbHelper = new DatabaseHelper(this);
+        long userId = dbHelper.loginAndGetUserId(username, password);
+
+        if (userId != -1) {
+            SessionManager.saveLoggedInUser(this, userId, username);
+            startActivity(new Intent(this, Favorites.class)); // or Search/Home screen
+            finish();
+        }
+
+
 
         //for the login button
         btn_j_login.setOnClickListener(v -> attemptLogin());
