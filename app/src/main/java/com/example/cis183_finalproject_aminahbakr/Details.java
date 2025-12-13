@@ -2,7 +2,6 @@ package com.example.cis183_finalproject_aminahbakr;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -11,28 +10,20 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class Details extends AppCompatActivity {
 
-    static String EXTRA_RESOURCE_ID = "resource_id";
-    static String EXTRA_ORG_NAME = "org_name";
-    static String EXTRA_LOCATION = "location";
-    static String EXTRA_CITY = "city";
-    static String EXTRA_CONTACT = "contact";
-    static String EXTRA_AVAILABILLITY = "availability";
+    private DatabaseHelper dbHelper;
 
-    TextView tv_j_details_orgName;
-    TextView tv_j_details_avail;
-    TextView tv_j_details_location;
-    TextView tv_j_details_contact;
-    TextView tv_j_details_city;
+    private long userId = -1L;
+    private long resourceId = -1L;
+    private boolean isFavorite = false;
 
-    //dont forget the button dumb dumb
-    Button btn_j_details_saved;
-
-    DatabaseHelper dbHelper;
-    long resourceId = -1L;
-    long userId = -1L;
-    boolean isFavorite = false;
+    private TextView tvOrgName, tvAvail, tvLocation, tvContact, tvCity;
+    private Button btnSaved;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,84 +32,79 @@ public class Details extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
-        tv_j_details_orgName = findViewById(R.id.tv_v_details_orgName);
-        tv_j_details_avail = findViewById(R.id.tv_v_details_avail);
-        tv_j_details_location = findViewById(R.id.tv_v_details_location);
-        tv_j_details_contact = findViewById(R.id.tv_v_details_contact);
-        tv_j_details_city = findViewById(R.id.tv_v_details_city);
-        btn_j_details_saved = findViewById(R.id.btn_v_detail_saved);
-
+        // ---- extras ----
         Intent i = getIntent();
-        resourceId = i.getLongExtra(EXTRA_RESOURCE_ID, -1L);
-
-        String orgName = i.getStringExtra(EXTRA_ORG_NAME);
-        String location = i.getStringExtra(EXTRA_LOCATION);
-        String availability = i.getStringExtra(EXTRA_AVAILABILLITY);
-        String contact = i.getStringExtra(EXTRA_CONTACT);
-        String city = i.getStringExtra(EXTRA_CITY);
-
-        tv_j_details_orgName.setText(orgName != null ? orgName : "");
-        tv_j_details_location.setText(location != null ? location : "");
-        tv_j_details_city.setText(city != null ? city : "");
-        tv_j_details_contact.setText(contact != null ? contact : "");
-        tv_j_details_avail.setText(availability != null ? availability : "");
-
-        //to figure out the user id from the logged in user
-        String username = SessionManager.getLoggedInUser(this);
-        if (username != null) {
-            userId = getUserIdByUsername(username);
+        if (i != null) {
+            userId = i.getLongExtra("user_id", -1L);
+            resourceId = i.getLongExtra("resource_id", -1L);
         }
 
-        updateFavoriteButtonText();
-
-        btn_j_details_saved.setOnClickListener(v -> toggleFavorite());
-
-
-    }
-
-    private void updateFavoriteButtonText() {
-        if (isFavorite) {
-            btn_j_details_saved.setText("Remove from Saved");
-        } else {
-            btn_j_details_saved.setText("Add to Saved");
-        }
-    }
-
-    private long getUserIdByUsername(String username) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor c = db.query(DatabaseHelper.TABLE_USERS,
-                new String[]{DatabaseHelper.COL_USER_ID},
-                DatabaseHelper.COL_USER_USERNAME + "=?",
-                new String[]{username}, null, null, null);
-        if (c != null && c.moveToFirst()) {
-            long id = c.getLong(0);
-            c.close();
-            return id;
-        }
-        if (c != null) c.close();
-        return -1L;
-    }
-
-    private void toggleFavorite() {
         if (userId == -1L || resourceId == -1L) {
-            Toast.makeText(this, "Unable to toggle favorite", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Missing user/resource data", Toast.LENGTH_SHORT).show();
+            finish();
             return;
         }
 
-        if (isFavorite) {
-            int rows = dbHelper.removeFavorite(userId, resourceId);
-            if (rows > 0) {
-                isFavorite = false;
-                Toast.makeText(this, "Removed from favorites", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            long result = dbHelper.addFavorite(userId, resourceId);
-            if (result != -1) {
-                isFavorite = true;
-                Toast.makeText(this, "Added to favorites", Toast.LENGTH_SHORT).show();
-            }
-        }
-        updateFavoriteButtonText();
+        // ---- views (MATCHES YOUR IDs) ----
+        tvOrgName = findViewById(R.id.tv_v_details_orgName);
+        tvAvail = findViewById(R.id.tv_v_details_avail);
+        tvLocation = findViewById(R.id.tv_v_details_location);
+        tvContact = findViewById(R.id.tv_v_details_contact);
+        tvCity = findViewById(R.id.tv_v_details_city);
+        btnSaved = findViewById(R.id.btn_v_detail_saved);
+
+        loadResource();
+
+        // ---- favorite state ----
+        isFavorite = dbHelper.isFavorite(userId, resourceId);
+        updateButtonText();
+
+        btnSaved.setOnClickListener(v -> toggleFavorite());
     }
 
+    private void loadResource() {
+        Cursor c = dbHelper.getResourceById(resourceId);
+
+        if (c != null && c.moveToFirst()) {
+            tvOrgName.setText(c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ORG_NAME)));
+            tvLocation.setText(c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ADDRESS)));
+            tvCity.setText(c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_CITY)));
+            tvContact.setText(c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_CONTACT)));
+            tvAvail.setText(c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_DESC)));
+
+            c.close();
+        } else {
+            if (c != null) c.close();
+            Toast.makeText(this, "Resource not found", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    private void toggleFavorite() {
+        if (isFavorite) {
+            boolean removed = dbHelper.removeFavorite(userId, resourceId);
+            if (removed) {
+                isFavorite = false;
+                Toast.makeText(this, "Removed from saved", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Could not remove", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+            boolean added = dbHelper.addFavorite(userId, resourceId, date);
+            if (added) {
+                isFavorite = true;
+                Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Already saved (or error)", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        updateButtonText();
+    }
+
+    private void updateButtonText() {
+        btnSaved.setText(isFavorite ? "Remove from saved" : "Add to saved");
+    }
 }
+

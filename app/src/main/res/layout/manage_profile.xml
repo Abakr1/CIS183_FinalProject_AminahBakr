@@ -22,8 +22,8 @@
         app:layout_constraintVertical_bias="0.051" />
 
     <androidx.cardview.widget.CardView
-        android:layout_width="373dp"
-        android:layout_height="427dp"
+        android:layout_width="378dp"
+        android:layout_height="492dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView8">
@@ -49,7 +49,7 @@
                 app:layout_constraintVertical_bias="0.194" />
 
             <EditText
-                android:id="@+id/tv_v_manage_username"
+                android:id="@+id/et_v_manage_username"
                 android:layout_width="239dp"
                 android:layout_height="52dp"
                 android:layout_marginTop="8dp"
@@ -78,7 +78,7 @@
                 app:layout_constraintVertical_bias="0.382" />
 
             <EditText
-                android:id="@+id/tv_v_manage_email"
+                android:id="@+id/et_v_manage_email"
                 android:layout_width="239dp"
                 android:layout_height="52dp"
                 android:layout_marginTop="8dp"
@@ -107,7 +107,7 @@
                 app:layout_constraintVertical_bias="0.565" />
 
             <EditText
-                android:id="@+id/tv_v_manage_city"
+                android:id="@+id/et_v_manage_city"
                 android:layout_width="239dp"
                 android:layout_height="52dp"
                 android:layout_marginTop="8dp"
@@ -120,6 +120,14 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.559" />
+
+            <Button
+                android:id="@+id/btn_v_manage_update"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="#2196F3"
+                android:text="Update" />
 
             <Button
                 android:id="@+id/btn_v_manage_logout"

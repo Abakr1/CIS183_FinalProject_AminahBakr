@@ -1,12 +1,8 @@
 package com.example.cis183_finalproject_aminahbakr;
 
-import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
@@ -14,150 +10,130 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 public class Search extends AppCompatActivity {
 
-    DatabaseHelper db;
-    long currentUserId;
+    private DatabaseHelper dbHelper;
 
-    // Category checkboxes
-    CheckBox cb_j_search_Food;
-    CheckBox cb_j_search_shelter;
-    CheckBox cb_j_search_health;
+    private long userId = -1L;
 
-    // City radios
-    RadioButton rb_j_search_Monroe;
-    RadioButton rb_j_search_ypsi;
+    private CheckBox cbFood, cbShelter, cbHealth;
+    private RadioButton rbMonroe, rbYpsi;
+    private Button btnSearch;
 
-    // Search button
-    Button btn_j_search_search;
-
-    // Results container
     private LinearLayout resultsContainer;
 
-    @SuppressLint("MissingInflatedId")
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search);
 
-        db = new DatabaseHelper(this);
+        dbHelper = new DatabaseHelper(this);
 
-        // Session → user
-        currentUserId = SessionManager.getUserId(this);
+        // get userId from intent (pass this when navigating to Search)
+        userId = getIntent().getLongExtra("user_id", -1L);
 
-        // Bind views
-        cb_j_search_Food = findViewById(R.id.cb_v_search_food);
-        cb_j_search_shelter = findViewById(R.id.cb_v_search_shelter);
-        cb_j_search_health = findViewById(R.id.cb_v_search_health);
+        cbFood = findViewById(R.id.cb_v_search_food);
+        cbShelter = findViewById(R.id.cb_v_search_shelter);
+        cbHealth = findViewById(R.id.cb_v_search_health);
 
-        rb_j_search_Monroe = findViewById(R.id.rb_v_search_monroe);
-        rb_j_search_ypsi = findViewById(R.id.rb_v_search_ypsi);
+        rbMonroe = findViewById(R.id.rb_v_search_monroe);
+        rbYpsi = findViewById(R.id.rb_v_search_ypsi);
 
-        btn_j_search_search = findViewById(R.id.btn_v_search_search);
+        btnSearch = findViewById(R.id.btn_v_search_search);
 
+        // this must exist in your xml (LinearLayout for results)
         resultsContainer = findViewById(R.id.ll_v_search_results);
 
-        btn_j_search_search.setOnClickListener(v -> runSearch());
-
-        NavBar.setUpBottomNav(this, NavBar.SCREEN_SEARCH);
+        btnSearch.setOnClickListener(v -> runSearch());
+        NavBar.setUpBottomNav(this, NavBar.SCREEN_SEARCH, userId);
     }
 
     private void runSearch() {
+        String city = getSelectedCity();
+        if (city == null) {
+            Toast.makeText(this, "Please choose Monroe or Ypsilanti", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        long[] categoryIds = getSelectedCategoryIds();
+        if (categoryIds.length == 0) {
+            Toast.makeText(this, "Select at least one category", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         resultsContainer.removeAllViews();
 
-        // City
-        String city = null;
-        if (rb_j_search_Monroe.isChecked()) city = "Monroe";
-        else if (rb_j_search_ypsi.isChecked()) city = "Ypsilanti";
+        Cursor c = dbHelper.getResourcesByCityAndCategories(city, categoryIds);
 
-        if (city == null) {
-            Toast.makeText(this, "Select a city", Toast.LENGTH_SHORT).show();
-            return;
+        if (c != null && c.moveToFirst()) {
+            do {
+                long resourceId = c.getLong(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ID));
+                String org = c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ORG_NAME));
+                String address = c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ADDRESS));
+
+                TextView tv = new TextView(this);
+                tv.setText(org + " — " + address);
+                tv.setTextSize(16);
+                tv.setPadding(16, 16, 16, 16);
+
+                tv.setTag(resourceId);
+
+                // click OR long click opens Details
+                tv.setOnClickListener(v -> openDetails((long) v.getTag()));
+                tv.setOnLongClickListener(v -> {
+                    openDetails((long) v.getTag());
+                    return true;
+                });
+
+                resultsContainer.addView(tv);
+
+            } while (c.moveToNext());
+            c.close();
+        } else {
+            if (c != null) c.close();
+            Toast.makeText(this, "No results found", Toast.LENGTH_SHORT).show();
         }
-
-        // Category
-        long categoryId = -1;
-        if (cb_j_search_Food.isChecked()) categoryId = db.getCategoryIdByName("Food");
-        else if (cb_j_search_shelter.isChecked()) categoryId = db.getCategoryIdByName("Shelter");
-        else if (cb_j_search_health.isChecked()) categoryId = db.getCategoryIdByName("Health");
-
-        if (categoryId == -1) {
-            Toast.makeText(this, "Select a category", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Cursor c = db.getResourcesByCityAndCategory(city, categoryId);
-        if (c == null || !c.moveToFirst()) {
-            showEmpty();
-            return;
-        }
-
-        do {
-            long resourceId = c.getLong(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ID));
-            String org = c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ORG_NAME));
-            String address = c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ADDRESS));
-
-            View row = buildResultRow(org, address);
-
-            // Tap → Details
-            row.setOnClickListener(v -> {
-                Intent i = new Intent(Search.this, Details.class);
-                i.putExtra("resource_id", resourceId);
-                startActivity(i);
-            });
-
-            // Long-press → Favorite
-            row.setOnLongClickListener(v -> {
-                new AlertDialog.Builder(Search.this)
-                        .setTitle("Add to favorites?")
-                        .setPositiveButton("Add", (d, w) -> {
-                            db.addFavorite(currentUserId, resourceId,
-                                    new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date()));
-                            Toast.makeText(this, "Added to favorites", Toast.LENGTH_SHORT).show();
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
-                return true;
-            });
-
-            resultsContainer.addView(row);
-
-        } while (c.moveToNext());
-
-        c.close();
     }
 
-    private View buildResultRow(String org, String address) {
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.VERTICAL);
-        row.setPadding(32, 24, 32, 24);
+    private void openDetails(long resourceId) {
+        if (userId == -1L) {
+            Toast.makeText(this, "User not found. Please log in again.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        TextView tvOrg = new TextView(this);
-        tvOrg.setText(org);
-        tvOrg.setTextSize(16f);
-        tvOrg.setGravity(Gravity.START);
-
-        TextView tvAddr = new TextView(this);
-        tvAddr.setText(address);
-        tvAddr.setTextSize(13f);
-
-        row.addView(tvOrg);
-        row.addView(tvAddr);
-
-        return row;
+        Intent intent = new Intent(this, Details.class);
+        intent.putExtra("user_id", userId);
+        intent.putExtra("resource_id", resourceId);
+        startActivity(intent);
     }
 
-    private void showEmpty() {
-        TextView tv = new TextView(this);
-        tv.setText("No results found");
-        tv.setPadding(32, 32, 32, 32);
-        resultsContainer.addView(tv);
+    private String getSelectedCity() {
+        if (rbMonroe != null && rbMonroe.isChecked()) return "Monroe";
+        if (rbYpsi != null && rbYpsi.isChecked()) return "Ypsilanti";
+        return null;
+    }
+
+    private long[] getSelectedCategoryIds() {
+        // categories are Food / Shelter / Health in your DB defaults
+        long foodId = dbHelper.getCategoryIdByName("Food");
+        long shelterId = dbHelper.getCategoryIdByName("Shelter");
+        long healthId = dbHelper.getCategoryIdByName("Health");
+
+        // build dynamically
+        long[] temp = new long[3];
+        int count = 0;
+
+        if (cbFood != null && cbFood.isChecked() && foodId != -1) temp[count++] = foodId;
+        if (cbShelter != null && cbShelter.isChecked() && shelterId != -1) temp[count++] = shelterId;
+        if (cbHealth != null && cbHealth.isChecked() && healthId != -1) temp[count++] = healthId;
+
+        long[] out = new long[count];
+        for (int i = 0; i < count; i++) out[i] = temp[i];
+        return out;
     }
 }
+
 

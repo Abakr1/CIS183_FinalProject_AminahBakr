@@ -48,13 +48,12 @@
         android:backgroundTint="#FFFDFD"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.432">
+        app:layout_constraintTop_toTopOf="@+id/card_v_fav_favorites"
+        app:layout_constraintVertical_bias="0.076">
 
         <LinearLayout
-            android:id="@+id/ll_v_favorites_container"
+            android:id="@+id/ll_v_favorites_results"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">

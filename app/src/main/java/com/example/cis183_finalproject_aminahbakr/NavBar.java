@@ -6,49 +6,60 @@ import android.widget.ImageView;
 
 public class NavBar {
 
-    //I probably have to add make a seperate xml screen for the nav bar to work properly
-    public static final int SCREEN_HOME      = 0;
-    public static final int SCREEN_SEARCH    = 1;
+    public static final int SCREEN_HOME        = 0;
+    public static final int SCREEN_SEARCH      = 1;
     public static final int SCREEN_ADDRESOURCE = 2;
-    public static final int SCREEN_PROFILE   = 3;
+    public static final int SCREEN_PROFILE     = 3;
 
-    public static void setUpBottomNav(Activity activity, int activeScreen) {
+    /**
+     * Call this in onCreate() of EACH Activity that has the nav bar
+     *
+     * @param activity      current Activity
+     * @param activeScreen  which screen is currently active
+     * @param userId        logged-in user id (REQUIRED)
+     */
+    public static void setUpBottomNav(Activity activity, int activeScreen, long userId) {
 
-        // ✅ CHANGE these ids to the ImageView ids in your navbar
-        ImageView ivHome = activity.findViewById(R.id.iv_v_home);
-        ImageView ivSearch = activity.findViewById(R.id.iv_v_search);
-        ImageView ivFavorites = activity.findViewById(R.id.iv_v_addResource);
-        ImageView ivProfile = activity.findViewById(R.id.iv_v_profile);
+        // These IDs MUST match the ImageView IDs in nav_bar.xml
+        ImageView ivHome        = activity.findViewById(R.id.iv_v_home);
+        ImageView ivSearch      = activity.findViewById(R.id.iv_v_search);
+        ImageView ivAddResource = activity.findViewById(R.id.iv_v_addResource);
+        ImageView ivProfile     = activity.findViewById(R.id.iv_v_profile);
 
-        if (ivHome == null || ivSearch == null || ivFavorites == null || ivProfile == null) return;
+        if (ivHome == null || ivSearch == null || ivAddResource == null || ivProfile == null) return;
 
         ivHome.setOnClickListener(v -> {
             if (activeScreen != SCREEN_HOME) {
-                activity.startActivity(new Intent(activity, Favorites.class)); // <-- change if needed
+                Intent i = new Intent(activity, Favorites.class); // or Home screen if you have one
+                i.putExtra("user_id", userId);
+                activity.startActivity(i);
             }
-            activity.finish();
         });
 
         ivSearch.setOnClickListener(v -> {
             if (activeScreen != SCREEN_SEARCH) {
-                activity.startActivity(new Intent(activity, Search.class));
+                Intent i = new Intent(activity, Search.class);
+                i.putExtra("user_id", userId);
+                activity.startActivity(i);
             }
-            activity.finish();
         });
 
-        ivFavorites.setOnClickListener(v -> {
+        ivAddResource.setOnClickListener(v -> {
             if (activeScreen != SCREEN_ADDRESOURCE) {
-                activity.startActivity(new Intent(activity, AddResources.class));
+                Intent i = new Intent(activity, AddResources.class);
+                i.putExtra(AddResources.EXTRA_USER_ID, userId);
+                activity.startActivity(i);
             }
-            activity.finish();
         });
 
         ivProfile.setOnClickListener(v -> {
             if (activeScreen != SCREEN_PROFILE) {
-                activity.startActivity(new Intent(activity, ManageProfile.class));
+                Intent i = new Intent(activity, ManageProfile.class);
+                i.putExtra("user_id", userId);
+                activity.startActivity(i);
             }
-            activity.finish();
         });
     }
 }
+
 

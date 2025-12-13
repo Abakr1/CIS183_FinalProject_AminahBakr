@@ -1,169 +1,90 @@
 package com.example.cis183_finalproject_aminahbakr;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class Favorites extends AppCompatActivity {
 
-    public static final String EXTRA_RESOURCE_ID = "extra_resource_id";
+    private DatabaseHelper dbHelper;
+    private long userId = -1L;
 
-    private DatabaseHelper db;
-    private LinearLayout container;
-    private long currentUserId;
+    private LinearLayout favContainer;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.favorites);
 
-        db = new DatabaseHelper(this);
+        dbHelper = new DatabaseHelper(this);
 
-
-        container = findViewById(R.id.ll_v_favorites_container);
-
-        //need to load session manager here
-         currentUserId = SessionManager.getUserId(this);
-
-         //if they cant find userID look up username
-        if(currentUserId == -1) {
-            String username = SessionManager.getLoggedInUser(this);
-            if(username == null) {
-                startActivity(new Intent(this, MainActivity.class));
-                finish();
-                return;
-            }
-            currentUserId = db.getUserIdByUsername(username);
+        userId = getIntent().getLongExtra("user_id", -1L);
+        if (userId == -1L) {
+            Toast.makeText(this, "Missing user. Please log in again.", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
         }
 
-        //for the bottom nav
-        NavBar.setUpBottomNav(this, NavBar.SCREEN_FAVORITES);
+        favContainer = findViewById(R.id.ll_v_favorites_results);
+
+        loadFavorites();
+
+        NavBar.setUpBottomNav(this, NavBar.SCREEN_HOME, userId);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        // refresh list after coming back from Details (saved/unsaved)
         loadFavorites();
     }
 
     private void loadFavorites() {
-        container.removeAllViews();
+        favContainer.removeAllViews();
 
-        Cursor c = db.getFavoriteResourcesCursor(currentUserId);
+        Cursor c = dbHelper.getFavoriteResourcesCursor(userId);
 
-        try {
-            if (c == null || !c.moveToFirst()) {
-                TextView empty = new TextView(this);
-                empty.setText("No favorites yet.");
-                empty.setPadding(dp(16), dp(16), dp(16), dp(16));
-                container.addView(empty);
-                return;
-            }
-
+        if (c != null && c.moveToFirst()) {
             do {
-                final long resourceId = c.getLong(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ID));
+                long resourceId = c.getLong(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ID));
                 String org = c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ORG_NAME));
-                String city = c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_CITY));
                 String address = c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ADDRESS));
 
-                View row = buildFavoriteRow(org, city, address);
+                TextView tv = new TextView(this);
+                tv.setText(org + " — " + address);
+                tv.setTextSize(16);
+                tv.setPadding(16, 16, 16, 16);
 
-                // tap to go to details
-                row.setOnClickListener(v -> {
-                    Intent i = new Intent(Favorites.this, Details.class);
-                    i.putExtra(EXTRA_RESOURCE_ID, resourceId);
-                    startActivity(i);
-                });
+                tv.setTag(resourceId);
 
-                // long press to delete favorite
-                row.setOnLongClickListener(v -> {
-                    new AlertDialog.Builder(Favorites.this)
-                            .setTitle("Remove favorite?")
-                            .setMessage("Delete this from favorites?")
-                            .setPositiveButton("Remove", (dialog, which) -> {
-                                db.removeFavorite(currentUserId, resourceId);
-                                loadFavorites();
-                            })
-                            .setNegativeButton("Cancel", null)
-                            .show();
-                    return true;
-                });
+                tv.setOnClickListener(v -> openDetails((long) v.getTag()));
 
-                container.addView(row);
+                favContainer.addView(tv);
 
             } while (c.moveToNext());
-
-        } finally {
-            if(c != null) c.close();
+            c.close();
+        } else {
+            if (c != null) c.close();
+            TextView empty = new TextView(this);
+            empty.setText("No favorites yet.");
+            empty.setPadding(16, 16, 16, 16);
+            favContainer.addView(empty);
         }
     }
 
-    private int dp(int value) {
-        return (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                value,
-                getResources().getDisplayMetrics()
-        );
-    }
-
-    private void addEmpty(String msg) {
-        TextView tv = new TextView(this);
-        tv.setText(msg);
-        tv.setPadding(32, 32, 32, 32);
-        tv.setGravity(Gravity.CENTER_HORIZONTAL);
-        container.addView(tv);
-    }
-
-    private View buildFavoriteRow(String org, String city, String address) {
-        LinearLayout card = new LinearLayout(this);
-        card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(dp(14), dp(14), dp(14), dp(14));
-
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        lp.setMargins(dp(12), dp(10), dp(12), dp(0));
-        card.setLayoutParams(lp);
-
-        TextView title = new TextView(this);
-        title.setText((org == null || org.trim().isEmpty()) ? "(No name)" : org);
-        title.setTextSize(TypedValue.COMPLEX_UNIT_SP,18);
-        title.setPadding(0, 0, 0, dp(4));
-
-        TextView sub = new TextView(this);
-        String line = "";
-        if (city != null && !city.trim().isEmpty()) line += city.trim();
-        if (address != null && !address.trim().isEmpty()) {
-
-            if (!line.isEmpty()) line += " • ";
-                line += address.trim();
-        }
-
-        sub.setText(line.isEmpty() ? " " : line);
-        sub.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-
-        TextView hint = new TextView(this);
-        hint.setText("Tap to view • Long press to remove");
-        hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-        hint.setGravity(Gravity.END);
-        hint.setPadding(0, dp(8), 0, 0);
-
-        card.addView(title);
-        card.addView(sub);
-        card.addView(hint);
-
-
-        return card;
+    private void openDetails(long resourceId) {
+        Intent intent = new Intent(this, Details.class);
+        intent.putExtra("user_id", userId);
+        intent.putExtra("resource_id", resourceId);
+        startActivity(intent);
     }
 }
+
 
 

@@ -125,7 +125,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    // ===================== DEFAULT SEED DATA =====================
+    // ===================== SEED DATA =====================
 
     private void insertDefaultCategories(SQLiteDatabase db) {
         insertCategory(db, "Food");
@@ -265,7 +265,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    // ===================== USERS (login/register/profile) =====================
+    // ===================== USERS =====================
 
     public long insertUser(String username, String password, String name, String email, String city, String orgRole) {
         SQLiteDatabase db = this.getWritableDatabase();

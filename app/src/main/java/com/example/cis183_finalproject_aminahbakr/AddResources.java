@@ -66,6 +66,8 @@ public class AddResources extends AppCompatActivity {
         loadCategoriesIntoSpinner();
 
         btn_j_add_submit.setOnClickListener(v -> saveResource());
+
+        NavBar.setUpBottomNav(this, NavBar.SCREEN_ADDRESOURCE, userId);
     }
 
     private void saveResource() {

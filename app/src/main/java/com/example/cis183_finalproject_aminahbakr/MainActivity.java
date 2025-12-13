@@ -8,19 +8,15 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
-
 
     EditText et_j_userName;
     EditText et_j_passWord;
     Button btn_j_login;
     Button btn_j_register;
-    DatabaseHelper dbHelper;
 
+    DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,47 +30,45 @@ public class MainActivity extends AppCompatActivity {
         btn_j_register = findViewById(R.id.btn_v_register);
 
         dbHelper = new DatabaseHelper(this);
-        long userId = dbHelper.loginAndGetUserId(username, password);
 
-        if (userId != -1) {
-            SessionManager.saveLoggedInUser(this, userId, username);
-            startActivity(new Intent(this, Favorites.class)); // or Search/Home screen
-            finish();
-        }
-
-
-
-        //for the login button
+        // login button
         btn_j_login.setOnClickListener(v -> attemptLogin());
 
-        //for the register button (takes users to register)
+        // register button
         btn_j_register.setOnClickListener(v -> {
             Intent i = new Intent(MainActivity.this, Register.class);
             startActivity(i);
         });
-
     }
 
-    private void attemptLogin()
-    {
+    private void attemptLogin() {
         String username = et_j_userName.getText().toString().trim();
         String password = et_j_passWord.getText().toString().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        boolean ok = dbHelper.checkUserLogin(username, password);
+        // Use the method you DO have in DatabaseHelper
+        long userId = dbHelper.loginAndGetUserId(username, password);
 
-        if(ok) {
-          Toast.makeText(this, "Logged In", Toast.LENGTH_SHORT).show();
+        if (userId != -1L) {
+            Toast.makeText(this, "Logged In", Toast.LENGTH_SHORT).show();
 
-           Intent i = new Intent(MainActivity.this, Search.class);
-           startActivity(i);
-           finish();
+            // Optional: save session if your SessionManager exists
+            // (If you don't have SessionManager yet, you can comment this out)
+            SessionManager.saveLoggedInUser(this, userId, username);
+
+            // Go to Search (or Home), and PASS the user_id
+            Intent i = new Intent(MainActivity.this, Search.class);
+            i.putExtra("user_id", userId);
+            startActivity(i);
+            finish();
+
+        } else {
+            Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show();
         }
-       else{
-          Toast.makeText(this,"Invalid username or password", Toast.LENGTH_SHORT).show();
-       }
     }
 }
+
