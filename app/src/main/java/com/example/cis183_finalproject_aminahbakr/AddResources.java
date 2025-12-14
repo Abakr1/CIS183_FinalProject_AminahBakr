@@ -104,7 +104,12 @@ public class AddResources extends AppCompatActivity {
             Toast.makeText(this, "That resource already exists.", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Resource added!", Toast.LENGTH_SHORT).show();
+
+            Intent i = new Intent(AddResources.this, Favorites.class);
+            i.putExtra("userId", userId);
+            startActivity(i);
             finish();
+
         }
     }
 
