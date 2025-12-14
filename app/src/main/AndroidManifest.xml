@@ -12,6 +12,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CIS183_FinalProject_AminahBakr">
 
+        <!--COVER PAGE = Launcher -->
+        <activity
+            android:name=".CoverPage"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <activity android:name=".Register" />
         <activity android:name=".Search" />
@@ -20,15 +29,10 @@
         <activity android:name=".ManageProfile" />
         <activity android:name=".Details" />
 
-
+        <!-- MainActivity is NOT launcher anymore -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="true" />
 
     </application>
 
