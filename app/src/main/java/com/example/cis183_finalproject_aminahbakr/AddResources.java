@@ -34,19 +34,18 @@ public class AddResources extends AppCompatActivity {
     private DatabaseHelper dbHelper;
     private long selectedCategoryId = -1L;
 
-    private long userId = -1L; // <-- REAL logged-in user id
+    private long userId = -1L;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_resource);
 
-        // grab userId from Intent
-        Intent i = getIntent();
-        if (i != null) {
-            userId = i.getLongExtra(EXTRA_USER_ID, -1L);
-        }
+        dbHelper = new DatabaseHelper(this);
 
+        // grab userId from Intent
+        userId = getIntent().getLongExtra("userId", -1L);
+        if(userId == -1L) userId = SessionManager.getUserId(this);
 
         if (userId == -1L) {
             Toast.makeText(this, "Please log in again (missing user).", Toast.LENGTH_LONG).show();
@@ -60,8 +59,6 @@ public class AddResources extends AppCompatActivity {
         et_j_add_desc = findViewById(R.id.et_v_add_desc);
         sp_J_add_category = findViewById(R.id.sp_v_add_category);
         btn_j_add_submit = findViewById(R.id.btn_v_add_submit);
-
-        dbHelper = new DatabaseHelper(this);
 
         loadCategoriesIntoSpinner();
 
@@ -115,7 +112,7 @@ public class AddResources extends AppCompatActivity {
         String a = address.toLowerCase();
         if (a.contains("ypsilanti") || a.contains("ypsi")) return "Ypsilanti";
         if (a.contains("monroe")) return "Monroe";
-        return "Monroe"; // safe fallback because DB city NOT NULL
+        return "Monroe";
     }
 
     private void loadCategoriesIntoSpinner() {

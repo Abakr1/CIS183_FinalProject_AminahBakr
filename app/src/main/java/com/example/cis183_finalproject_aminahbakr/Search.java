@@ -16,13 +16,16 @@ import androidx.appcompat.app.AppCompatActivity;
 public class Search extends AppCompatActivity {
 
     private DatabaseHelper dbHelper;
-
     private long userId = -1L;
 
-    private CheckBox cbFood, cbShelter, cbHealth;
-    private RadioButton rbMonroe, rbYpsi;
-    private Button btnSearch;
+    private CheckBox cb_j_search_food;
+    private CheckBox cb_j_search_shelter;
+    private CheckBox cb_j_search_health;
 
+    private RadioButton rb_j_search_monroe;
+    private RadioButton rb_j_search_ypsi;
+
+    private Button btn_j_search_search;
     private LinearLayout resultsContainer;
 
     @Override
@@ -32,27 +35,34 @@ public class Search extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
-        // get userId from intent (pass this when navigating to Search)
-        userId = getIntent().getLongExtra("user_id", -1L);
+        // correct key + session fallback
+        userId = getIntent().getLongExtra("userId", -1L);
+        if (userId == -1L) userId = SessionManager.getUserId(this);
 
-        cbFood = findViewById(R.id.cb_v_search_food);
-        cbShelter = findViewById(R.id.cb_v_search_shelter);
-        cbHealth = findViewById(R.id.cb_v_search_health);
+        if (userId == -1L) {
+            Toast.makeText(this, "Missing user. Please log in again.", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
-        rbMonroe = findViewById(R.id.rb_v_search_monroe);
-        rbYpsi = findViewById(R.id.rb_v_search_ypsi);
+        cb_j_search_food    = findViewById(R.id.cb_v_search_food);
+        cb_j_search_shelter = findViewById(R.id.cb_v_search_shelter);
+        cb_j_search_health  = findViewById(R.id.cb_v_search_health);
 
-        btnSearch = findViewById(R.id.btn_v_search_search);
+        rb_j_search_monroe  = findViewById(R.id.rb_v_search_monroe);
+        rb_j_search_ypsi    = findViewById(R.id.rb_v_search_ypsi);
 
-        // this must exist in your xml (LinearLayout for results)
-        resultsContainer = findViewById(R.id.ll_v_search_results);
+        btn_j_search_search = findViewById(R.id.btn_v_search_search);
+        resultsContainer    = findViewById(R.id.ll_v_search_results);
 
-        btnSearch.setOnClickListener(v -> runSearch());
+        btn_j_search_search.setOnClickListener(v -> runSearch());
+
         NavBar.setUpBottomNav(this, NavBar.SCREEN_SEARCH, userId);
     }
 
     private void runSearch() {
         String city = getSelectedCity();
+
         if (city == null) {
             Toast.makeText(this, "Please choose Monroe or Ypsilanti", Toast.LENGTH_SHORT).show();
             return;
@@ -70,9 +80,15 @@ public class Search extends AppCompatActivity {
 
         if (c != null && c.moveToFirst()) {
             do {
-                long resourceId = c.getLong(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ID));
-                String org = c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ORG_NAME));
-                String address = c.getString(c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ADDRESS));
+                long resourceId = c.getLong(
+                        c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ID)
+                );
+                String org = c.getString(
+                        c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ORG_NAME)
+                );
+                String address = c.getString(
+                        c.getColumnIndexOrThrow(DatabaseHelper.COL_RESOURCE_ADDRESS)
+                );
 
                 TextView tv = new TextView(this);
                 tv.setText(org + " — " + address);
@@ -80,17 +96,12 @@ public class Search extends AppCompatActivity {
                 tv.setPadding(16, 16, 16, 16);
 
                 tv.setTag(resourceId);
-
-                // click OR long click opens Details
                 tv.setOnClickListener(v -> openDetails((long) v.getTag()));
-                tv.setOnLongClickListener(v -> {
-                    openDetails((long) v.getTag());
-                    return true;
-                });
 
                 resultsContainer.addView(tv);
 
             } while (c.moveToNext());
+
             c.close();
         } else {
             if (c != null) c.close();
@@ -99,41 +110,41 @@ public class Search extends AppCompatActivity {
     }
 
     private void openDetails(long resourceId) {
-        if (userId == -1L) {
-            Toast.makeText(this, "User not found. Please log in again.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         Intent intent = new Intent(this, Details.class);
-        intent.putExtra("user_id", userId);
-        intent.putExtra("resource_id", resourceId);
+        intent.putExtra("userId", userId);
+        intent.putExtra("resourceId", resourceId);
         startActivity(intent);
     }
 
     private String getSelectedCity() {
-        if (rbMonroe != null && rbMonroe.isChecked()) return "Monroe";
-        if (rbYpsi != null && rbYpsi.isChecked()) return "Ypsilanti";
+        if (rb_j_search_monroe != null && rb_j_search_monroe.isChecked()) return "Monroe";
+        if (rb_j_search_ypsi != null && rb_j_search_ypsi.isChecked()) return "Ypsilanti";
         return null;
     }
 
     private long[] getSelectedCategoryIds() {
-        // categories are Food / Shelter / Health in your DB defaults
         long foodId = dbHelper.getCategoryIdByName("Food");
         long shelterId = dbHelper.getCategoryIdByName("Shelter");
         long healthId = dbHelper.getCategoryIdByName("Health");
 
-        // build dynamically
         long[] temp = new long[3];
         int count = 0;
 
-        if (cbFood != null && cbFood.isChecked() && foodId != -1) temp[count++] = foodId;
-        if (cbShelter != null && cbShelter.isChecked() && shelterId != -1) temp[count++] = shelterId;
-        if (cbHealth != null && cbHealth.isChecked() && healthId != -1) temp[count++] = healthId;
+        if (cb_j_search_food != null && cb_j_search_food.isChecked() && foodId != -1)
+            temp[count++] = foodId;
+
+        if (cb_j_search_shelter != null && cb_j_search_shelter.isChecked() && shelterId != -1)
+            temp[count++] = shelterId;
+
+        if (cb_j_search_health != null && cb_j_search_health.isChecked() && healthId != -1)
+            temp[count++] = healthId;
 
         long[] out = new long[count];
         for (int i = 0; i < count; i++) out[i] = temp[i];
+
         return out;
     }
 }
+
 
 

@@ -18,12 +18,8 @@ public class SessionManager {
     }
 
     // this has to go after to not break it
-    public static void savedLoggedInUser(Context context, String username) {
-        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-                .edit()
-                .putString(KEY_USERNAME, username)
-                .apply();
-    }
+    //I lied that definetely broke it...
+
 
     public static String getLoggedInUser(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

@@ -11,15 +11,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class ManageProfile extends AppCompatActivity {
 
-    EditText et_j_manage_username;
-    EditText et_j_manage_email;
-    EditText et_j_manage_city;
+    private EditText et_j_manage_username;
+    private EditText et_j_manage_email;
+    private EditText et_j_manage_city;
 
-    Button btn_j_manage_update;
-    Button btn_j_manage_logout;
+    private Button btn_j_manage_update;
+    private Button btn_j_manage_logout;
 
-    DatabaseHelper dbHelper;
-    long userId = -1L;
+    private DatabaseHelper dbHelper;
+    private long userId = -1L;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,15 +28,15 @@ public class ManageProfile extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
-        // 🔹 IDs you confirmed
+
         et_j_manage_username = findViewById(R.id.et_v_manage_username);
         et_j_manage_email    = findViewById(R.id.et_v_manage_email);
-        et_j_manage_city     = findViewById(R.id.et_v_register_email);
+        et_j_manage_city     = findViewById(R.id.et_v_manage_city);
 
         btn_j_manage_update = findViewById(R.id.btn_v_manage_update);
         btn_j_manage_logout = findViewById(R.id.btn_v_manage_logout);
 
-        // 🔹 get logged-in user
+        // get logged-in user
         userId = SessionManager.getUserId(this);
 
         if (userId == -1L) {
@@ -44,6 +44,7 @@ public class ManageProfile extends AppCompatActivity {
             Intent i = new Intent(this, MainActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(i);
+            finish();
             return;
         }
 
@@ -53,10 +54,10 @@ public class ManageProfile extends AppCompatActivity {
 
         btn_j_manage_logout.setOnClickListener(v -> {
             SessionManager.clearSession(this);
-
             Intent i = new Intent(ManageProfile.this, MainActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(i);
+            finish();
         });
 
 
@@ -100,8 +101,7 @@ public class ManageProfile extends AppCompatActivity {
             return;
         }
 
-        // 🔹 updateUserProfile DOES NOT update username
-        // username stays the same in DB unless you add a method for it
+
         boolean ok = dbHelper.updateUserProfile(userId, username, email, city);
 
         if (ok) {

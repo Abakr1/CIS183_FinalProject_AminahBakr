@@ -6,22 +6,20 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    EditText et_j_userName;
-    EditText et_j_passWord;
-    Button btn_j_login;
-    Button btn_j_register;
+    private EditText et_j_userName;
+    private EditText et_j_passWord;
+    private Button btn_j_login;
+    private Button btn_j_register;
 
-    DatabaseHelper dbHelper;
+    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
         et_j_userName  = findViewById(R.id.et_v_userName);
@@ -31,10 +29,10 @@ public class MainActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
-        // login button
+        // LOGIN button
         btn_j_login.setOnClickListener(v -> attemptLogin());
 
-        // register button
+        // REGISTER button
         btn_j_register.setOnClickListener(v -> {
             Intent i = new Intent(MainActivity.this, Register.class);
             startActivity(i);
@@ -50,19 +48,18 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Use the method you DO have in DatabaseHelper
         long userId = dbHelper.loginAndGetUserId(username, password);
 
-        if (userId != -1L) {
-            Toast.makeText(this, "Logged In", Toast.LENGTH_SHORT).show();
+        if (userId != -1) {
 
-            // Optional: save session if your SessionManager exists
-            // (If you don't have SessionManager yet, you can comment this out)
             SessionManager.saveLoggedInUser(this, userId, username);
 
-            // Go to Search (or Home), and PASS the user_id
+            Toast.makeText(this, "Logged in", Toast.LENGTH_SHORT).show();
+
+            // go to search
             Intent i = new Intent(MainActivity.this, Search.class);
-            i.putExtra("user_id", userId);
+            //pass userId
+            i.putExtra("userId", userId);
             startActivity(i);
             finish();
 
@@ -71,4 +68,5 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
+
 

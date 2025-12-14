@@ -25,6 +25,9 @@ public class Favorites extends AppCompatActivity {
         dbHelper = new DatabaseHelper(this);
 
         userId = getIntent().getLongExtra("user_id", -1L);
+
+        if(userId == -1L) userId = SessionManager.getUserId(this);
+
         if (userId == -1L) {
             Toast.makeText(this, "Missing user. Please log in again.", Toast.LENGTH_SHORT).show();
             finish();
@@ -36,12 +39,14 @@ public class Favorites extends AppCompatActivity {
         loadFavorites();
 
         NavBar.setUpBottomNav(this, NavBar.SCREEN_HOME, userId);
+
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // refresh list after coming back from Details (saved/unsaved)
+        // refresh list after coming back from Details
         loadFavorites();
     }
 
@@ -80,8 +85,8 @@ public class Favorites extends AppCompatActivity {
 
     private void openDetails(long resourceId) {
         Intent intent = new Intent(this, Details.class);
-        intent.putExtra("user_id", userId);
-        intent.putExtra("resource_id", resourceId);
+        intent.putExtra("userId", userId);
+        intent.putExtra("resourceId", resourceId);
         startActivity(intent);
     }
 }
